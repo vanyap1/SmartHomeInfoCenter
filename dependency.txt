@@ -1,0 +1,5 @@
+sudo apt-get install python3-kivy
+sudo apt-get install -y libsdl2-dev     libsdl2-image-dev     libsdl2-mixer-dev     libsdl2-ttf-dev     libportmidi-dev     libswscale-dev     libavformat-dev     libavcodec-dev     zlib1g-dev
+sudo apt-get install -y python3-smbus
+sudo apt-get install -y python3-requests
+python3 -m pip install --break-system-packages kivy_garden.graph --extra-index-url https://kivy-garden.github.io/simple/
