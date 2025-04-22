@@ -1,0 +1,89 @@
+#:kivy 1.0
+
+<WetherWidged>:
+
+    canvas:
+        Rectangle:
+            source: 'images/bg_3.png'
+            size: self.size
+        BorderImage:
+            source: 'images/shadow32.png'
+            border: (30,30,36,36)
+            size:(self.width+56, self.height+56)
+            pos: (-28,-28)
+
+
+    FloatLayout:
+
+        Button:
+            pos: [10, 120]
+            size: 150, 150
+            size_hint: None, None
+            background_normal: root.CurrentWetIcon
+            background_down: root.CurrentWetIcon
+        Label:
+            font_size: 20
+            font_name: 'fonts/AdonisC_Bold_Italic.otf'
+            text: root.CurrentWet
+            pos: [220, 150]
+
+
+        Button:
+            pos: [0, 30]
+            size: 100, 100
+            size_hint: None, None
+            background_normal: root.Tommorow1
+            background_down: root.Tommorow1
+
+        Button:
+            pos: [110, 30]
+            size: 100, 100
+            size_hint: None, None
+            background_normal: root.Tommorow2
+            background_down: root.Tommorow2
+
+        Button:
+            pos: [220, 30]
+            size: 100, 100
+            size_hint: None, None
+            background_normal: root.Tommorow3
+            background_down: root.Tommorow3
+
+        Button:
+            pos: [330, 30]
+            size: 100, 100
+            size_hint: None, None
+            background_normal: root.Tommorow4
+            background_down: root.Tommorow4
+
+        Button:
+            pos: [0, 0]
+            size: 100, 40
+            size_hint: None, None
+            text: root.TommorowT1
+            background_normal: 'images/null.png'
+            background_down: 'images/null.png'
+
+        Button:
+            pos: [110, 0]
+            size: 100, 40
+            size_hint: None, None
+            text: root.TommorowT2
+            background_normal: 'images/null.png'
+            background_down: 'images/null.png'
+
+        Button:
+            pos: [220, 0]
+            size: 100, 40
+            size_hint: None, None
+            text: root.TommorowT3
+            background_normal: 'images/null.png'
+            background_down: 'images/null.png'
+
+        Button:
+            pos: [330, 0]
+            size: 100, 40
+            size_hint: None, None
+            text: root.TommorowT4
+            background_normal: 'images/null.png'
+            background_down: 'images/null.png'

@@ -1,0 +1,117 @@
+#:kivy 1.0
+
+<SmartHomeDataWidget>:
+
+    canvas:
+        Rectangle:
+            source: 'images/bg_3.png'
+            size: self.size
+        BorderImage:
+            source: 'images/shadow32.png'
+            border: (30,30,36,36)
+            size:(self.width+56, self.height+56)
+            pos: (-28,-28)
+
+
+    FloatLayout:
+        Button:
+            pos: [10, 380-70]
+            size: 50, 61
+            size_hint: None, None
+            background_normal: 'images/OutdoorTemp.png'
+            background_down: 'images/OutdoorTemp.png'
+
+        Label:
+            font_size: 20
+            font_name: 'fonts/AdonisC_Bold_Italic.otf'
+            text: root.HouseTemperatureStr
+            pos: [110, 380-70]
+
+        #Button:
+        #    pos: [10, 380-140]
+        #    size: 50, 61
+        #    size_hint: None, None
+        #    background_normal: 'images/WaterHeater.png'
+        #    background_down: 'images/WaterHeater.png'
+        #Image:
+        #    pos: 10, (380-120)
+        #    size_hint: None, None
+        #    size: 90, 65
+        #    source: root.led_icon
+
+        #Label:
+        #    font_size: 16
+        #    font_name: 'fonts/AdonisC_Bold_Italic.otf'
+        #    text: root.WaterHeaterStr
+        #    pos: [110, 380-145]
+        #ToggleButton:
+        #    pos: [90, 380-143]
+        #    size: 100, 30
+        #    size_hint: None, None
+        #    background_normal: 'images/switch1.png'
+        #    background_down: 'images/switch1_off.png'
+
+        #Button:
+        #    pos: [10, 380-140]
+        #    size: 59, 61
+        #    size_hint: None, None
+        #    background_normal: 'images/WoodBoiler.png'
+        #    background_down: 'images/WoodBoiler.png'
+        Label:
+            font_size: 20
+            font_name: 'fonts/AdonisC_Bold_Italic.otf'
+            text: root.BoilerTemperatureStr
+            pos: [110, 380-105]
+
+        #Energy status box
+        Image:
+            pos: 5, (380-215)
+            size_hint: None, None
+            size: self.texture_size
+            source: root.energyColorFrame
+        #Voltage
+        Label:
+            font_size: 30
+            halign: 'left'
+            size_hint: None, None  
+            size: 200, 30
+            markup: True   
+            text_size: self.size
+            font_name: 'fonts/lcd.ttf'
+            text: root.acVoltage
+            pos: [60, 380-113]
+        #Total Power 
+        Label:
+            font_size: 30
+            halign: 'left'
+            size_hint: None, None 
+            size: 280, 40 
+            markup: True 
+            text_size: self.size
+            font_name: 'fonts/lcd.ttf'
+            text: root.acTotalPower
+            pos: [60, 380-143]
+
+        #Battery capacity
+        Label:
+            font_size: 30
+            halign: 'left'
+            size_hint: None, None
+            size: 280, 40 
+            markup: True
+            text_size: self.size
+            font_name: 'fonts/lcd.ttf'
+            text: root.socValue
+            pos: [60, 380-173]    
+        
+        #Battery current
+        Label:
+            font_size: 30
+            halign: 'left'
+            size_hint: None, None
+            size: 280, 40
+            markup: True 
+            text_size: self.size
+            font_name: 'fonts/lcd.ttf'
+            text: root.socCurrent
+            pos: [60, 380-203]       

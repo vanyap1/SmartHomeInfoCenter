@@ -1,0 +1,74 @@
+#:kivy 1.0
+
+<IoControll>:
+
+    canvas:
+        Rectangle:
+            source: 'images/bg_3.png'
+            size: self.size
+        BorderImage:
+            source: 'images/shadow32.png'
+            border: (30,30,36,36)
+            size:(self.width+56, self.height+56)
+            pos: (-28,-28)
+
+
+    FloatLayout:
+        Image:
+            id: boiler_led
+            pos: [-15 , 90]
+            size: 32, 32
+            source: 'images/led_off_g.png'
+        Switch:
+            id: w_heater_sw
+            pos: [80, 110]
+            size: 50, 61
+            size_hint: None, None
+            background_normal:
+            background_down:
+            on_active: root.io_swich("w_heater" , str(self.active))
+        Label:
+            font_size: 24
+            markup: True
+            text: "[color=ffffff]" + "Нагрівач води" + "[/color]"
+            pos: [210 , 92]
+
+
+        Image:
+            id: kotel_led
+            pos: [-15 , 90-50]
+            size: 32, 32
+            source: 'images/led_off_g.png'
+        Switch:
+            id: g_kotel_sw
+            pos: [80, 110-50]
+            size: 50, 61
+            size_hint: None, None
+            background_normal:
+            background_down:
+            on_active: root.io_swich("g_kotel" ,str(self.active))
+        Label:
+            font_size: 24
+            markup: True
+            text: "[color=ffffff]" + "Газовий котел" + "[/color]"
+            pos: [210 , 92-50]
+
+        #spare conroll channel
+        Image:
+            id: spare_led
+            pos: [-15 , 90-100]
+            size: 32, 32
+            source: 'images/led_off_g.png'
+        Switch:
+            id: spare_ch
+            pos: [80, 110-100]
+            size: 50, 61
+            size_hint: None, None
+            background_normal:
+            background_down:
+            on_active: root.io_swich("spare" ,str(self.active))
+        Label:
+            font_size: 24
+            markup: True
+            text: "[color=ffffff]" + "Гирлянди" + "[/color]"
+            pos: [210 , 92-100]
