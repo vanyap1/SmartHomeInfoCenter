@@ -658,7 +658,7 @@ class Server_handler(Thread):
                 WaterHeaterIndicator = 'images/grn_led.png'
             else:
                 WaterHeaterIndicator = 'images/grey_led.png'
-            WaterTankLevel = round(int(arg[13]) * 14.2857)
+            WaterTankLevel = int(arg[13])-128
 
 class BoxApp(App):
     def build(self):
