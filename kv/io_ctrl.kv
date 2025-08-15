@@ -26,7 +26,7 @@
             size_hint: None, None
             background_normal:
             background_down:
-            on_active: root.io_swich("w_heater" , str(self.active))
+            on_active: root.io_swich("6" , str(self.active))
         Label:
             font_size: 24
             markup: True
@@ -34,41 +34,41 @@
             pos: [210 , 92]
 
 
-        Image:
-            id: kotel_led
-            pos: [-15 , 90-50]
-            size: 32, 32
-            source: 'images/led_off_g.png'
-        Switch:
-            id: g_kotel_sw
-            pos: [80, 110-50]
-            size: 50, 61
-            size_hint: None, None
-            background_normal:
-            background_down:
-            on_active: root.io_swich("g_kotel" ,str(self.active))
-        Label:
-            font_size: 24
-            markup: True
-            text: "[color=ffffff]" + "Газовий котел" + "[/color]"
-            pos: [210 , 92-50]
+        #Image:
+        #    id: kotel_led
+        #    pos: [-15 , 90-50]
+        #    size: 32, 32
+        #    source: 'images/led_off_g.png'
+        #Switch:
+        #    id: g_kotel_sw
+        #    pos: [80, 110-50]
+        #    size: 50, 61
+        #    size_hint: None, None
+        #    background_normal:
+        #    background_down:
+        #    on_active: root.io_swich("g_kotel" ,str(self.active))
+        #Label:
+        #    font_size: 24
+        #    markup: True
+        #    text: "[color=ffffff]" + "Газовий котел" + "[/color]"
+        #    pos: [210 , 92-50]
 
         #spare conroll channel
-        Image:
-            id: spare_led
-            pos: [-15 , 90-100]
-            size: 32, 32
-            source: 'images/led_off_g.png'
-        Switch:
-            id: spare_ch
-            pos: [80, 110-100]
-            size: 50, 61
-            size_hint: None, None
-            background_normal:
-            background_down:
-            on_active: root.io_swich("spare" ,str(self.active))
-        Label:
-            font_size: 24
-            markup: True
-            text: "[color=ffffff]" + "Гирлянди" + "[/color]"
-            pos: [210 , 92-100]
+        #Image:
+        #    id: spare_led
+        #    pos: [-15 , 90-100]
+        #    size: 32, 32
+        #    source: 'images/led_off_g.png'
+        #Switch:
+        #    id: spare_ch
+        #    pos: [80, 110-100]
+        #    size: 50, 61
+        #    size_hint: None, None
+        #    background_normal:
+        #    background_down:
+        #    on_active: root.io_swich("spare" ,str(self.active))
+        #Label:
+        #    font_size: 24
+        #    markup: True
+        #    text: "[color=ffffff]" + "Гирлянди" + "[/color]"
+        #    pos: [210 , 92-100]

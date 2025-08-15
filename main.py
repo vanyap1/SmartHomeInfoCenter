@@ -192,43 +192,19 @@ class WetherWidged(Screen):
     TommorowT4 = StringProperty('--°C')
     pass
 
-class IoControll(Screen):
-    def io_swich(self, arg1, arg2):
-        global boiler_en
-        global g_kotel
-        global g_spare
 
-        self.stat = '0'
-        if arg2 == 'True':
-            self.stat = '1'
-        if arg2 == 'False':
-            self.stat = '0'
+class IoControll(Screen):
+    def io_swich(self, swichId, featureState):
+        user_key = "key" 
+        url = f"http://192.168.1.5:8000/setSwitchById/?switch_id={swichId}&state={featureState}&userKey={user_key}"
         try:
-            io_stat = requests.get('http://192.168.1.5/sm/io_ctrl.php?fn=write&out=' + arg1 + '&state=' + self.stat + '&key=0XlCqivBS8rHa5Q0YIF4o9yqpTmyasU4',
-                                   auth=("vanyap1", 'vanyap198808'))
-            #print('http://192.168.1.5/sm/io_ctrl.php?fn=write&out=' + arg1 + '&state=' + self.stat + '&key=0XlCqivBS8rHa5Q0YIF4o9yqpTmyasU4')
-            if (io_stat.status_code == 200):
-                # self.parse_wether(response)
-                precheck_arr = io_stat.text.split(":")
-                if (precheck_arr[0] == 'data' and precheck_arr[5] == 'end'):
-                    if precheck_arr[4] == '1':
-                        boiler_en = True
-                    else:
-                        boiler_en = False
-                    if precheck_arr[3] == '1':
-                        g_kotel = True
-                    else:
-                        g_kotel = False
-                    
-                    if precheck_arr[2] == '1':
-                        g_spare = True
-                    else:
-                        g_spare = False    
-                print(g_spare)        
-                pass
-        except:
-            print('Wether server error')
-    pass
+            response = requests.get(url, headers={'accept': 'application/json'}, timeout=3)
+            if response.status_code == 200:
+                print(response.json())
+            else:
+                print("Switch set error:", response.status_code)
+        except Exception as e:
+            print("Switch set exception:", e)
 
 
 
@@ -259,7 +235,7 @@ class Dashboard(FloatLayout):
         self.ip = Label(text='[color=ffffff]192.168.1.200[/color]', markup=True, font_size=18, pos=(250, -190),
                            font_name='fonts/hemi_head_bd_it.ttf')
 
-        self.add_widget(self.background_image)
+        #self.add_widget(self.background_image)
         self.add_widget(self.clock)
         self.add_widget(self.ip)
         self.add_widget(self.WetWidget)
@@ -363,7 +339,31 @@ class Dashboard(FloatLayout):
             self.SmHome.socValue ="[color=ff0000]ERROR[/color]"
             self.SmHome.socCurrent = "[color=ff0000]ERROR[/color]"
             
-
+    def get_switches_status(self):
+        try:
+            response = requests.get(
+                'http://192.168.1.5:8000/getSwitches/',
+                headers={'accept': 'application/json'},
+                timeout=3
+            )
+            if response.status_code == 200:
+                switches = response.json().get("ok", [])
+                # Десеріалізуємо у словник для зручного доступу
+                switches_dict = {sw['switch_name']: sw for sw in switches}
+                # Отримати потрібні параметри:
+                water_heater_manual = switches_dict.get("WaterHeaterManual", {})
+                water_heater_power = switches_dict.get("WaterHeaterPower", {})
+                # Приклад доступу до state:
+                manual_state = water_heater_manual.get("state", None)
+                power_state = water_heater_power.get("state", None)
+                # Можна повертати весь словник для подальшої роботи
+                return switches_dict
+            else:
+                print("Switches API error:", response.status_code)
+                return {}
+        except Exception as e:
+            print("Switches API exception:", e)
+            return {}
 
     def update_time(self):
         #server.Server_handler_second.data_transfer(self, {'x': "aaa",'y': "bbb"})
@@ -371,34 +371,40 @@ class Dashboard(FloatLayout):
             #print(threading.enumerate()[1].is_alive())
             if threading.enumerate()[1].is_alive() != True:
                 Server_handler()
+                
                 f = open("log.txt", "a")
                 f.write('AUTO Run SRV handler   -  ' + datetime.now().strftime('%d/%m/%Y-%H:%M:%S') + '\n')
                 f.close()
+
+
+
         except:
             Server_handler()
             f = open("log.txt", "a")
             f.write('AUTO Run SRV handler after crash   -  ' + datetime.now().strftime('%d/%m/%Y-%H:%M:%S') + '\n')
             f.close()
-
-        if g_kotel == True:
-            self.IoCtrl.ids.kotel_led.source = 'images/led_on_g.png'
-            self.IoCtrl.ids.g_kotel_sw.active = True
-        else:
-            self.IoCtrl.ids.kotel_led.source = 'images/led_off_g.png'
-            self.IoCtrl.ids.g_kotel_sw.active = False
-        if boiler_en == True:
-            self.IoCtrl.ids.boiler_led.source = 'images/led_on_g.png'
+        switches = self.get_switches_status()
+        water_heater_manual_state = switches.get("WaterHeaterManual", {}).get("state")
+        water_heater_power_state = switches.get("WaterHeaterPower", {}).get("state")   
+        #if g_kotel == True:
+        #    self.IoCtrl.ids.kotel_led.source = 'images/led_on_g.png'
+        #    self.IoCtrl.ids.g_kotel_sw.active = True
+        #else:
+        #    self.IoCtrl.ids.kotel_led.source = 'images/led_off_g.png'
+        #    self.IoCtrl.ids.g_kotel_sw.active = False
+        if water_heater_manual_state:
             self.IoCtrl.ids.w_heater_sw.active = True
         else:
-            self.IoCtrl.ids.boiler_led.source = 'images/led_off_g.png'
             self.IoCtrl.ids.w_heater_sw.active = False
 
-        if g_spare == True:
-            self.IoCtrl.ids.spare_led.source = 'images/led_on_g.png'
-            self.IoCtrl.ids.spare_ch.active = True
+        if water_heater_power_state == True or water_heater_manual_state == True:
+            self.IoCtrl.ids.boiler_led.source = 'images/led_on_g.png'
+        #    self.IoCtrl.ids.w_heater_sw.active = True
         else:
-            self.IoCtrl.ids.spare_led.source = 'images/led_off_g.png'
-            self.IoCtrl.ids.spare_ch.active = False
+            self.IoCtrl.ids.boiler_led.source = 'images/led_off_g.png'
+        #    self.IoCtrl.ids.w_heater_sw.active = False
+
+        
 
 
         self.WaterPressurePlot.points = WaterPressurePoints
@@ -407,7 +413,7 @@ class Dashboard(FloatLayout):
         self.WaterHeaterPlot.points = KotelTempPoints
         self.WaterHeaterTemp.ids.graph_data.add_plot(self.WaterHeaterPlot)
 
-        self.clock.text='[color=ffffff]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
+        self.clock.text='[color=21BCFF]'+datetime.now().strftime('%H:%M:%S')+'[/color]'
         self.tim += 1
         self.SmHome.HouseTemperatureStr = 'Дитяча:       ' + str(tZone2) + '°С'
         self.SmHome.BoilerTemperatureStr = 'Т Двір:         ' + str(tOutdoor) + '°С\nТ Котла:     '+str(tBoiler) + '°С'
