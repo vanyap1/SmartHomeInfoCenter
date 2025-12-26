@@ -87,6 +87,7 @@ if __name__ == '__main__':
                 
                 energyResWidget_widget.analogGaugeValue = self.gateway.waterPress
                 energyResWidget_widget.waterTankValue = self.gateway.waterLevel-128
+                energyResWidget_widget.boilerLedState = self.gateway.digitalOut[1]
                 
                 smartHomeSensors_widget.line4 = ['---:', "---", '%', '21BCFF']
                 smartHomeSensors_widget.line5 = ['---:', "---", '%', '21BCFF']

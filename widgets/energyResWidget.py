@@ -104,6 +104,8 @@ class EnergyResWidget(FloatLayout):  # було: Widget
     pmFrameImage = StringProperty("EN_OK.png")
     analogGaugeValue = NumericProperty(10)
     waterTankValue = NumericProperty(10)
+    boilerLedState = BooleanProperty(False)
+
     def __init__(self, **kwargs):
         super(EnergyResWidget, self).__init__(**kwargs)
         self.size_hint_x = None
@@ -130,6 +132,7 @@ class EnergyResWidget(FloatLayout):  # було: Widget
                   pmFrameImage=self._energyMonitorUpdate,
                   analogGaugeValue=self._analogMeterUpdate,
                   waterTankValue=self._waterTankUpdate,
+                  boilerLedState=self._boilerLedUpdate
                   )
         print(self.size)
         self.pmFrame = Image(source=f"images/{self.pmFrameImage}", size_hint=(None, None), size=(286, 138), pos=(self.x+5, self.y+145))
@@ -161,7 +164,17 @@ class EnergyResWidget(FloatLayout):  # було: Widget
             font_size=30, markup=True, font_name="fonts/lcd.ttf", 
             size_hint=(None, None), size=(210, 30), pos=(self.x+50, self.y+160)
         )
-        
+
+        self.boilerLed = Image(source='images/led_off_g.png', size_hint=(None, None), size=(32, 32), pos=(self.x+325, self.y+240))
+        self.BoilerLedLabel = Label(
+            text="[color=FFFFFF]Boiler[/color]",
+            halign="center",
+            valign="middle",
+            font_size=20, markup=True, font_name="fonts/hemi_head_bd_it.ttf", 
+            size_hint=(None, None), size=(80, 30), pos=(self.x+300, self.y+200)
+        )
+
+
         self.widgetLayout.add_widget(self.voltageLabel)   
         self.widgetLayout.add_widget(self.utilityPowerLabel)   
         self.widgetLayout.add_widget(self.batterySocLabel)   
@@ -172,9 +185,14 @@ class EnergyResWidget(FloatLayout):  # було: Widget
         
         self.widgetLayout.add_widget(self.analog_display)
         self.widgetLayout.add_widget(self.water_t)
+        self.widgetLayout.add_widget(self.boilerLed)
+        self.widgetLayout.add_widget(self.BoilerLedLabel)
 
         self.add_widget(self.widgetLayout) 
         
+    def _boilerLedUpdate(self, *args):
+        self.boilerLed.source = 'images/led_on_g.png' if self.boilerLedState else 'images/led_off_g.png'
+        pass
     def _analogMeterUpdate(self, *args):
         self.analog_display.value = self.analogGaugeValue
         pass
