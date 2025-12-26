@@ -8,7 +8,7 @@ class Server_handler_task(Thread):
     global data_collect
     global trasfer_status
     global data_part_count
-    trasfer_status = "done";
+    trasfer_status = "done"
     data_collect={"Request_num":[], "Data":[]}
     data_part_count = 0
     def __init__(self):
