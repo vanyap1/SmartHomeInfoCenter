@@ -176,7 +176,6 @@ class EnergyResWidget(FloatLayout):  # було: Widget
         self.add_widget(self.widgetLayout) 
         
     def _analogMeterUpdate(self, *args):
-        print(self.analogGaugeValue)
         self.analog_display.value = self.analogGaugeValue
         pass
     def _waterTankUpdate(self, *args):
