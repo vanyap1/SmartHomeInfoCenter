@@ -66,10 +66,13 @@ class SensorApiClient:
         Повертає [channel_name, value, unit] як рядки для каналу (1-індексація).
         Завжди повертає три елементи, None → "".
         """
-        payload = self.fetch_last(mac)
-        name = self.extract_channel_name(payload, index)
-        val = self.extract_channel(payload, index)
-        unit = self.extract_unit(payload, index)
+        try:
+            payload = self.fetch_last(mac)
+            name = self.extract_channel_name(payload, index)
+            val = self.extract_channel(payload, index)
+            unit = self.extract_unit(payload, index)
+        except Exception:
+            name = val = unit = None
         return [self._to_str(name), self._to_str(val), self._to_str(unit)]
 
 
