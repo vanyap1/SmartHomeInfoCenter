@@ -14,7 +14,7 @@ daysofweekUA = [
 ]
 
 class TimeWidget(FloatLayout):  # було: Widget
-    size_text = NumericProperty(90)
+    size_text = NumericProperty(80)
     fontName = StringProperty("fonts/hemi_head_bd_it.ttf")
     dateFontName = StringProperty("fonts/AdonisC_Bold_Italic.otf")
     timeFontColor = StringProperty("21BCFF")

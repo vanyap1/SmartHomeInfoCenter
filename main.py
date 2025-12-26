@@ -58,7 +58,7 @@ if __name__ == '__main__':
             #weather_widget._widgetUpdate()
 
 
-
+            self.count = 0
             def update_time(dt):
                 time_widget.currentTime = datetime.now()
                 if(self.energySrc == "AC"):
@@ -67,8 +67,9 @@ if __name__ == '__main__':
                     energyResWidget_widget.pmFrameImage = 'EN_ERR.png'    
                 else:
                     energyResWidget_widget.pmFrameImage = 'EN_NOK.png' 
+                
                
-
+            
             def weather_update(dt):
                 weather_widget._widgetUpdate()
                 res = self.api.get_channel("Battery:0x0003", 5)
@@ -78,12 +79,24 @@ if __name__ == '__main__':
                 res = self.api.get_channel("Gateway:0x0001", 3)
                 res.append("21BCFF")
                 smartHomeSensors_widget.line2 = res
-
+                try:
+                    self.waterTankLevel = self.api.get_channel("WaterTank:0x0001", 1)[1]
+                    self.waterTankPressure = self.api.get_channel("WaterTank:0x0001", 2)[1]
+                    self.waterTankLevel = float(self.waterTankLevel)
+                    self.waterTankPressure = float(self.waterTankPressure)*100
+                except:
+                    self.waterTankLevel = 1
+                    self.waterTankPressure = 0
+                    pass
+               
                 try:
                     oldServData = self.api.oldApiGetData().split('/')
                 #['###2025', '12', '26', '5', '16', '47', '17', 'n', '-1.1', '51.3', '0', '26.3', '26.3', 'th', 'tl', '___', '0', '^-^', '376', '227', '1']
                     res = ['Вулиця:', oldServData[8], '°C', 'FFFFFF']
                     smartHomeSensors_widget.line3 = res
+                    
+                    energyResWidget_widget.analogGaugeValue = self.waterTankPressure
+                    energyResWidget_widget.waterTankValue = self.waterTankLevel
                 
                     smartHomeSensors_widget.line4 = ['---:', "---", '%', '21BCFF']
                     smartHomeSensors_widget.line5 = ['---:', "---", '%', '21BCFF']

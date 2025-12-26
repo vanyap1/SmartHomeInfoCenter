@@ -1,13 +1,98 @@
 import kivy
 from kivy.uix.label import Label
 from kivy.uix.image import Image
-from kivy.properties import NumericProperty, BooleanProperty, StringProperty, ObjectProperty, ListProperty
+from kivy.properties import NumericProperty, BooleanProperty, StringProperty, ObjectProperty, ListProperty, BoundedNumericProperty
 kivy.require('1.6.0')
 
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scatter import Scatter
+from kivy.uix.stencilview import StencilView
 # ...
+
+class analog_meter(Scatter):
+    value = NumericProperty(10)
+    size_gauge = BoundedNumericProperty(512, min=128, max=512, errorvalue=128)
+    def __init__(self, **kwargs):
+        super(analog_meter, self).__init__(**kwargs)
+        self.bind(value=self._update)
+        self._display = Scatter(
+            size=(150, 86),
+            do_rotation=False,
+            do_scale=False,
+            do_translation=False
+        )
+        self._needle = Scatter(
+            size=(4, 67),
+            do_rotation=False,
+            do_scale=False,
+            do_translation=False
+        )
+        self.lcd_display = Scatter(
+            size=(150, 50),
+            do_rotation=False,
+            do_scale=False,
+            do_translation=False
+        )
+
+        bg_image = Image(source='images/analog_display_150.png', size=(150, 86), pos=(0, 0))
+        _img_needle = Image(source="images/arrow_small.png", size=(4, 134))
+
+        lcd_bg = Image(source='images/lcd_bg.png', size=(150, 50), pos=(0, -55))
+        self.pressure_label = Label(text='000', font_name='fonts/lcd.ttf', halign="center",
+                                  font_size=36, pos=(25, -76), markup=True)
+        self._display.add_widget(bg_image)
+        self._needle.add_widget(_img_needle)
+
+        self.lcd_display.add_widget(lcd_bg)
+        self.lcd_display.add_widget(self.pressure_label)
+        self.add_widget(self._display)
+        self.add_widget(self._needle)
+        self.add_widget(self.lcd_display)
+
+    def _update(self, *args):
+        niddle_angle = 78 - (self.value / 3.8461)
+        self._needle.center_x = self._display.center_x
+        self._needle.center_y = self._display.center_y - 32
+        self._needle.rotation = niddle_angle
+        if (self.value <= 160):
+            text_color = 'ff0000'
+        else:
+            text_color = 'ffffff'
+        self.pressure_label.text='[color=' + text_color + ']' +str(self.value/100) + ' Bar' + '[/color]'
+        pass
+
+class water_tank(Scatter):
+    value = NumericProperty(10)
+
+    def __init__(self, **kwargs):
+        super(water_tank, self).__init__(**kwargs)
+        self.bind(value=self._update)
+        self._tank = Scatter(
+            size=(110, 135),
+            do_rotation=False,
+            do_scale=False,
+            do_translation=False
+        )
+        water_tank_bar_empty = StencilView(size_hint=(None, None), size=(110, 135), pos=(0, 0))
+        water_tank_empty_img = Image(source='images/water_empty.png', size=(110, 135), pos=(0, 0))
+        water_tank_bar_empty.add_widget(water_tank_empty_img)
+        self._tank.add_widget(water_tank_bar_empty)
+        self.water_tank_bar = StencilView(size_hint=(None, None), size=(110, 135), pos=(0, 0))
+        water_tank_full_img = Image(source='images/water_full.png', size=(110, 135), pos=(0, 0))
+        self.water_tank_bar.add_widget(water_tank_full_img)
+        self._tank.add_widget(self.water_tank_bar)
+        self.water_tank_bar.height = self.value
+        self.percent_lbl=Label(text='100%', font_name='fonts/hemi_head_bd_it.ttf', halign="center", text_size=self.size, font_size=20, pos=(5, 50), markup=True)
+        self._tank.add_widget(self.percent_lbl)
+        self.add_widget(self._tank)
+
+    def _update(self, *args):
+        self.text_color = 'ffffff'
+        if (self.value <= 20):
+            self.text_color = 'ff0000'
+        self.percent_lbl.text='[color='+ self.text_color +']' + str(self.value) + '%[/color]'
+        self.water_tank_bar.height = self.value+10
 
 
 class EnergyResWidget(FloatLayout):  # було: Widget
@@ -17,6 +102,8 @@ class EnergyResWidget(FloatLayout):  # було: Widget
     batterySoc = ListProperty(["90%", "FFFFFF"])
     batteryStatus = ListProperty(["-1.02A 53.2V 14C", "FFFFFF"])
     pmFrameImage = StringProperty("EN_OK.png")
+    analogGaugeValue = NumericProperty(10)
+    waterTankValue = NumericProperty(10)
     def __init__(self, **kwargs):
         super(EnergyResWidget, self).__init__(**kwargs)
         self.size_hint_x = None
@@ -24,7 +111,8 @@ class EnergyResWidget(FloatLayout):  # було: Widget
         self.size_hint_y = None
         self.height = 290
         self.pmFrameImage = "EN_OK.png"
-
+        self.analog_display = analog_meter(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(5, 50))
+        self.water_t = water_tank(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(160, 5))
 
         with self.canvas.before:
             from kivy.graphics import Color, Rectangle
@@ -40,6 +128,8 @@ class EnergyResWidget(FloatLayout):  # було: Widget
                   batterySoc=self._energyMonitorUpdate,
                   batteryStatus=self._energyMonitorUpdate,
                   pmFrameImage=self._energyMonitorUpdate,
+                  analogGaugeValue=self._analogMeterUpdate,
+                  waterTankValue=self._waterTankUpdate,
                   )
         print(self.size)
         self.pmFrame = Image(source=f"images/{self.pmFrameImage}", size_hint=(None, None), size=(286, 138), pos=(self.x+5, self.y+145))
@@ -79,8 +169,19 @@ class EnergyResWidget(FloatLayout):  # було: Widget
 
         self.widgetLayout.add_widget(self.pmFrame)   
 
+        
+        self.widgetLayout.add_widget(self.analog_display)
+        self.widgetLayout.add_widget(self.water_t)
+
         self.add_widget(self.widgetLayout) 
         
+    def _analogMeterUpdate(self, *args):
+        print(self.analogGaugeValue)
+        self.analog_display.value = self.analogGaugeValue
+        pass
+    def _waterTankUpdate(self, *args):
+        self.water_t.value = self.waterTankValue
+        pass
 
     def _update_rect(self, *args):
         self.bg_rect.pos = self.pos
