@@ -75,6 +75,44 @@ class SensorApiClient:
             name = val = unit = None
         return [self._to_str(name), self._to_str(val), self._to_str(unit)]
 
+    def get_switch_state(self, switch_id: int) -> Optional[Dict[str, Any]]:
+        """
+        Отримати стан свіча за ID.
+        Повертає словник з полями: id, switch_name, state, enabled, state_changed_at, changed_by, description
+        або None у разі помилки.
+        """
+        try:
+            url = f"{self.base_url}/getSwitchesById/"
+            params = {"switch_id": switch_id}
+            resp = self._session.get(url, params=params, timeout=self.timeout)
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("ok")
+        except Exception as e:
+            print(f"Error fetching switch state: {e}")
+            return None
+    def set_switch_state(self, switch_id: int, state: bool, user_key: str = "key") -> bool:
+        """
+        Задати стан свіча за ID.
+        Повертає True якщо операція успішна, False якщо помилка.
+        """
+        try:
+            url = f"{self.base_url}/setSwitchById/"
+            params = {
+                "switch_id": switch_id,
+                "state": "true" if state else "false",
+                "userKey": user_key
+            }
+            resp = self._session.get(url, params=params, timeout=self.timeout)
+            resp.raise_for_status()
+            data = resp.json()
+        # Перевіряємо чи є "ok" в відповіді
+            return "ok" in data
+        except Exception as e:
+            print(f"Error setting switch state: {e}")
+            return False
+
+
 
     def oldApiGetData(self):
         """Старий API для отримання даних сенсора."""

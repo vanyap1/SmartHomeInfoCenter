@@ -8,6 +8,8 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scatter import Scatter
 from kivy.uix.stencilview import StencilView
+from kivy.uix.togglebutton import ToggleButton
+
 # ...
 
 class analog_meter(Scatter):
@@ -38,7 +40,7 @@ class analog_meter(Scatter):
         bg_image = Image(source='images/analog_display_150.png', size=(150, 86), pos=(0, 0))
         _img_needle = Image(source="images/arrow_small.png", size=(4, 134))
 
-        lcd_bg = Image(source='images/lcd_bg.png', size=(150, 50), pos=(0, -55))
+        lcd_bg = Image(source='images/lcd_bg.png', size=(150, 44), pos=(0, -47))
         self.pressure_label = Label(text='000', font_name='fonts/lcd.ttf', halign="center",
                                   font_size=36, pos=(25, -76), markup=True)
         self._display.add_widget(bg_image)
@@ -105,8 +107,9 @@ class EnergyResWidget(FloatLayout):  # було: Widget
     analogGaugeValue = NumericProperty(10)
     waterTankValue = NumericProperty(10)
     boilerLedState = BooleanProperty(False)
+    boilerSwitchState = BooleanProperty(False)
 
-    def __init__(self, **kwargs):
+    def __init__(self, _cb=None, **kwargs):
         super(EnergyResWidget, self).__init__(**kwargs)
         self.size_hint_x = None
         self.width = 400
@@ -115,7 +118,7 @@ class EnergyResWidget(FloatLayout):  # було: Widget
         self.pmFrameImage = "EN_OK.png"
         self.analog_display = analog_meter(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(5, 50))
         self.water_t = water_tank(do_rotation=False, do_scale=False, do_translation=False, value=0, pos=(160, 5))
-
+        self.apicb = _cb
         with self.canvas.before:
             from kivy.graphics import Color, Rectangle
             Color(0, 0, 0, 0.5)
@@ -132,7 +135,8 @@ class EnergyResWidget(FloatLayout):  # було: Widget
                   pmFrameImage=self._energyMonitorUpdate,
                   analogGaugeValue=self._analogMeterUpdate,
                   waterTankValue=self._waterTankUpdate,
-                  boilerLedState=self._boilerLedUpdate
+                  boilerLedState=self._boilerLedUpdate,
+                  boilerSwitchState=self._setBoilerSwitchState
                   )
         print(self.size)
         self.pmFrame = Image(source=f"images/{self.pmFrameImage}", size_hint=(None, None), size=(286, 138), pos=(self.x+5, self.y+145))
@@ -171,9 +175,19 @@ class EnergyResWidget(FloatLayout):  # було: Widget
             halign="center",
             valign="middle",
             font_size=20, markup=True, font_name="fonts/hemi_head_bd_it.ttf", 
-            size_hint=(None, None), size=(80, 30), pos=(self.x+300, self.y+200)
+            size_hint=(None, None), size=(80, 30), pos=(self.x+300, self.y+205)
         )
 
+        
+        self.swtchBtn = ToggleButton(
+            background_normal='images/switch0_off.png', 
+            background_down='images/switch0.png',
+            border=(0,0,0,0),
+            size_hint=(None, None), 
+            size=(192/2, 96/2),
+            pos=(self.x+295, self.y+150))
+        
+        self.swtchBtn.bind(state=self._boilerControllSwitch)
 
         self.widgetLayout.add_widget(self.voltageLabel)   
         self.widgetLayout.add_widget(self.utilityPowerLabel)   
@@ -187,12 +201,23 @@ class EnergyResWidget(FloatLayout):  # було: Widget
         self.widgetLayout.add_widget(self.water_t)
         self.widgetLayout.add_widget(self.boilerLed)
         self.widgetLayout.add_widget(self.BoilerLedLabel)
+        self.widgetLayout.add_widget(self.swtchBtn)
 
         self.add_widget(self.widgetLayout) 
         
+    def _boilerControllSwitch(self, instance, value):
+        #WaterHeaterManual = 6
+        self.apicb({'switchId': 6, 'state': value == 'down' if True else False})
+    
+    def _setBoilerSwitchState(self, *args):
+        self.swtchBtn.state = 'down' if self.boilerSwitchState else 'normal'
+        pass
+
+
     def _boilerLedUpdate(self, *args):
         self.boilerLed.source = 'images/led_on_g.png' if self.boilerLedState else 'images/led_off_g.png'
         pass
+    
     def _analogMeterUpdate(self, *args):
         self.analog_display.value = self.analogGaugeValue
         pass
@@ -242,11 +267,8 @@ if __name__ == '__main__':
 
             self.LeftPanel = BoxLayout(orientation='vertical')
 
-            time_widget = TimeWidget()
-            time_widge2 = TimeWidget()
-            time_widge3 = TimeWidget()
-            time_widge4 = TimeWidget()
-
+            time_widget = EnergyResWidget()
+            
 
             self.LeftPanel.add_widget(time_widget)
 

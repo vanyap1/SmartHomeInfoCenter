@@ -4,7 +4,8 @@ from widgets.smartHomeSensors import SmartHomeSensors
 from widgets.energyResWidget import EnergyResWidget
 from api import SensorApiClient
 from smartHomeUdpService import SmartHomeGatewayUdpClient
-
+from widgets.timer import ElapseTimerWidget
+from widgets.systemInfo import SystemInfoWidget
 
 from udpService import UdpAsyncClient
 from gatewayDto import *
@@ -36,6 +37,13 @@ if __name__ == '__main__':
             def smartHomeGatewayUdpClientCb(can_message):
                 self.gateway.canMsgParse(can_message)
                 pass
+            def widgetCbApiIntegration(args):
+                print("Widget callback:", args['switchId'], args['state'])
+                res = self.api.set_switch_state(args['switchId'], args['state'])
+                if not res:
+                    print("Failed to set switch state via API")
+
+                #print("API set switch result:", res)
             
             self.kotelGateway = SmartHomeGatewayUdpClient(cbFn=smartHomeGatewayUdpClientCb, gatewayIp=gatewayKotelIP, rxPort=gatewayKotelRxPort, txPort=gatewayKotelTxPort, bufferSize=1024)
             self.kotelGateway.startListener()
@@ -54,14 +62,25 @@ if __name__ == '__main__':
             time_widget = TimeWidget()
             weather_widget = WeatherWidget()
             smartHomeSensors_widget = SmartHomeSensors()
-            energyResWidget_widget = EnergyResWidget()
+            energyResWidget_widget = EnergyResWidget(widgetCbApiIntegration)
+            elapseTimer_widget = ElapseTimerWidget()
+            systemInfo_widget = SystemInfoWidget()
 
+            switch_info = self.api.get_switch_state("6")
+            if switch_info:
+                print("Initial boiler switch state:", switch_info['state'])
+                energyResWidget_widget.boilerSwitchState = switch_info['state']
+                energyResWidget_widget.boilerSwitchState = False
+           
 
             self.LeftPanel.add_widget(time_widget)
             self.LeftPanel.add_widget(weather_widget)
 
             self.CenterPanel.add_widget(smartHomeSensors_widget)
             self.CenterPanel.add_widget(energyResWidget_widget)
+
+            self.RightPanel.add_widget(elapseTimer_widget)
+            self.RightPanel.add_widget(systemInfo_widget)
 
             self.dashGroup.add_widget(self.LeftPanel)
             self.dashGroup.add_widget(self.CenterPanel)
@@ -75,9 +94,11 @@ if __name__ == '__main__':
 
             self.count = 0
             
+            
 
             def update_time(dt):
                 time_widget.currentTime = datetime.now()
+                elapseTimer_widget.oneSecondTick()
                 if(self.energySrc == "AC"):
                     energyResWidget_widget.pmFrameImage = 'EN_OK.png'
                 elif(self.energySrc == "err"):
@@ -104,7 +125,10 @@ if __name__ == '__main__':
                 res = self.api.get_channel("Gateway:0x0001", 3)
                 res.append("21BCFF")
                 smartHomeSensors_widget.line2 = res
-            
+
+                switch_info = self.api.get_switch_state("6")
+                if switch_info:
+                    energyResWidget_widget.boilerSwitchState = switch_info['state']
                
                 try:
                     oldServData = self.api.oldApiGetData().split('/')
