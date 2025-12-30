@@ -82,6 +82,7 @@ class ElapseTimerWidget(FloatLayout):  # було: Widget
     def _clearTimer(self, value):
         self.secondsElapsed = 0
         self.minutesElapsed = 0
+        self.currentTime = f"{self.minutesElapsed}:{self.secondsElapsed:02d}"
         
     def oneSecondTick(self):
         if self.timerRunning:
