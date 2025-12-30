@@ -146,6 +146,15 @@ if __name__ == '__main__':
                     energyResWidget_widget.utilityVoltages = [str(data['voltage']).replace("[", "").replace("]", "") + " V", "FFFFFF"]
                     energyResWidget_widget.utilityPower = [f"{data['total_power']} W", "FFFFFF"]
                     self.energySrc = data['source']
+                    def update_ui(dt):
+                        systemInfo_widget.solarPlant.acLinePower = data['total_power']
+                        systemInfo_widget.solarPlant.acLineCurrent = data['total_power']
+                        systemInfo_widget.solarPlant.acLineConnected = True if data['source']=="AC" else False
+        
+                    Clock.schedule_once(update_ui, 0)
+                    
+
+
                 except:
                     self.energySrc = "err"
                     energyResWidget_widget.utilityVoltages = ["ERROR", "FF0000"]
@@ -166,7 +175,16 @@ if __name__ == '__main__':
                         socCurrentColor = "ffff00"
                     if((data['socCurrent']/10) >= 1):
                         socCurrentColor = "8080ff"
+
+                    def update_ui(dt):
+                        systemInfo_widget.solarPlant.batPower = data['socVoltage']/100 * data['socCurrent']/10
+                        systemInfo_widget.solarPlant.batLevel = data['socStatusLoad'][0]
+                        
+                    Clock.schedule_once(update_ui, 0)
+
+
                     energyResWidget_widget.batterySoc = [f"{data['socStatusLoad'][0]} %", socLevelColor]
+                    
                     energyResWidget_widget.batteryStatus = [f"{data['socCurrent']/10}A {data['socVoltage']/100} V {int(data['socTemperature']/10)}C", socCurrentColor]
                 except:
                     energyResWidget_widget.batterySoc = ["ERROR", "FF0000"]
