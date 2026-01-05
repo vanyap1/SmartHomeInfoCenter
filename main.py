@@ -122,23 +122,50 @@ if __name__ == '__main__':
                 res.append("FFFFFF")
                 smartHomeSensors_widget.line1 = res
 
-                res = self.api.get_channel("Gateway:0x0001", 3)
-                res.append("21BCFF")
-                smartHomeSensors_widget.line2 = res
+                boilerTemp = self.api.get_channel("Gateway:0x0001", 3)
+                if float(boilerTemp[1]) < 20:
+                    boilerTempColor = "00BFFF"  # Блакитний - холодна вода
+                elif float(boilerTemp[1]) < 30:
+                    boilerTempColor = "FFFF00"  # Жовтий - тепла
+                elif float(boilerTemp[1]) < 33:
+                    boilerTempColor = "FFA500"  # Помаранчевий - гаряча
+                else:
+                    boilerTempColor = "FF0000"  # Червоний - дуже гаряча
+                boilerTemp.append(boilerTempColor)
+                
+                roomTemp = self.api.get_channel("Interiour:0x0001", 1)
+                doorTemp = self.api.get_channel("Interiour:0x0001", 2)
+
+                print(f"Room Temp: {roomTemp}, Door Temp: {doorTemp}")
+
+                if float(roomTemp[1]) < 18:
+                    tempColor = "0080FF"  # Синій - холодно
+                elif float(roomTemp[1]) < 20:
+                    tempColor = "00BFFF"  # Світло-синій - прохолодно
+                elif float(roomTemp[1]) < 22:
+                    tempColor = "00FF00"  # Зелений - комфортно
+                elif float(roomTemp[1]) < 24:
+                    tempColor = "FFFF00"  # Жовтий - тепло
+                elif float(roomTemp[1]) < 26:
+                    tempColor = "FFA500"  # Помаранчевий - жарко
+                else:
+                    tempColor = "FF0000"  # Червоний - дуже жарко
+                roomTemp = [f"Кімнатна:", f"{roomTemp[1]}", "°C", tempColor]
+                
+                
+                smartHomeSensors_widget.line3 = roomTemp
+                smartHomeSensors_widget.outdoorTemp = float(doorTemp[1])
+                smartHomeSensors_widget.line2 = boilerTemp
+                
+                
+
+                
 
                 switch_info = self.api.get_switch_state("6")
                 if switch_info:
                     energyResWidget_widget.boilerSwitchState = switch_info['state']
                
-                try:
-                    oldServData = self.api.oldApiGetData().split('/')
-                #['###2025', '12', '26', '5', '16', '47', '17', 'n', '-1.1', '51.3', '0', '26.3', '26.3', 'th', 'tl', '___', '0', '^-^', '376', '227', '1']
-                    res = ['Вулиця:', oldServData[8], '°C', 'FFFFFF']
-                    smartHomeSensors_widget.line3 = res
-                    
-                    
-                except Exception as e:
-                    print(f"Error parsing old API data: {e}")
+    
 
             def serverUdpIncomingData(data):
                 
@@ -179,6 +206,7 @@ if __name__ == '__main__':
                     def update_ui(dt):
                         systemInfo_widget.solarPlant.batPower = data['socVoltage']/100 * data['socCurrent']/10
                         systemInfo_widget.solarPlant.batLevel = data['socStatusLoad'][0]
+                        systemInfo_widget.solarPlant.batCurrent = data['socCurrent']/10
                         
                     Clock.schedule_once(update_ui, 0)
 

@@ -58,7 +58,7 @@ class ElapseTimerWidget(FloatLayout):  # було: Widget
             size_hint=(None, None),                # заповнює увесь батьківський лейаут
             size = (400-150, 75),
             pos_hint={'x': 0, 'y': 0},
-            text="[color=21BCFF]--23:45[/color]",
+            text="[color=21BCFF]--:--[/color]",
         )
         
         lay = GridLayout(cols=3, size_hint=(1, 1), pos_hint={'x': 0, 'y': 0})
