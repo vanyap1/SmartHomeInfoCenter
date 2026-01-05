@@ -12,7 +12,9 @@ from kivy.graphics import Color, Rectangle
 from kivy.properties import BooleanProperty, NumericProperty
 
 from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy.graphics import Color, RoundedRectangle
+from kivy.animation import Animation
 
 
 # --------------------------------------------------
@@ -195,20 +197,23 @@ class SolarGridInfo(FloatLayout):
             pos_hint={'x': 0.80, 'y': 0.3}
             )
 
-        self.add_widget(self.houseimg) 
-        self.add_widget(self.utilityLine)
-        self.add_widget(self.powerLine_Utility)
-        self.add_widget(self.powerLine_Battery)
-        self.add_widget(self.powerLine_Solar)
+        self.solarStationWidget = FloatLayout(size_hint=(1, 1), pos_hint={'x': -0.1, 'y': 0})
+        self.solarStationWidget.add_widget(self.houseimg) 
+        self.solarStationWidget.add_widget(self.utilityLine)
+        self.solarStationWidget.add_widget(self.powerLine_Utility)
+        self.solarStationWidget.add_widget(self.powerLine_Battery)
+        self.solarStationWidget.add_widget(self.powerLine_Solar)
+        self.solarStationWidget.add_widget(self.inverrter)
+        self.solarStationWidget.add_widget(self.batteryPack)
+        self.solarStationWidget.add_widget(self.panelsPackLeft)
+        self.solarStationWidget.add_widget(self.panelsPackRight)
+        self.solarStationWidget.add_widget(self.powerLineMain)
+        self.solarStationWidget.add_widget(self.gridPowerLable)
+        self.solarStationWidget.add_widget(self.pvPowerLabel)
+        self.solarStationWidget.add_widget(self.batPowerLabel)
 
-        self.add_widget(self.inverrter)
-        self.add_widget(self.batteryPack)
-        self.add_widget(self.panelsPackLeft)
-        self.add_widget(self.panelsPackRight)
-        self.add_widget(self.powerLineMain)
-        self.add_widget(self.gridPowerLable)
-        self.add_widget(self.pvPowerLabel)
-        self.add_widget(self.batPowerLabel)
+
+        self.add_widget(self.solarStationWidget)
 
     def _labelsUpdate(self, *args):
         self.gridPowerLable.text = f"Grid\n{self.acLinePower}w"
@@ -294,6 +299,40 @@ class SolarGridInfo(FloatLayout):
                 self.powerLine_Battery.anim_delay = -1
             
 
+class ButtonsBar(FloatLayout):
+    def __init__(self, button_callback, **kwargs):
+        super().__init__(**kwargs)
+
+        self.button_callback = button_callback
+        self.size_hint = (1, None)
+        self.pos_hint = {'x': 0, 'y': 0}
+        self.buttonsBlock = BoxLayout(
+            orientation='horizontal',
+            size_hint=(1, None),
+            height=50,
+            pos_hint={'x': 0, 'y': 0}
+        )
+
+        self.solarSystemInfoBtn = Button(
+            text='Solar Info',
+            on_release=lambda instance: self.button_callback("1")
+        )
+
+        self.graphInfoBtn = Button(
+            text='Graph Info',
+            on_release=lambda instance: self.button_callback("2")   
+        )
+
+        self.buttonsBlock.add_widget(self.solarSystemInfoBtn)
+        self.buttonsBlock.add_widget(self.graphInfoBtn)
+
+        self.add_widget(self.buttonsBlock)
+    
+    def button_callback(self, button_name):
+        if(self.button_callback is not None):
+            self.button_callback(button_name)
+
+
 # --------------------------------------------------
 # Основний системний віджет
 # --------------------------------------------------
@@ -316,7 +355,9 @@ class SystemInfoWidget(FloatLayout):
 
         # графіка
         self.solarPlant = SolarGridInfo()
+        self.buttonGroup = ButtonsBar(self.buttons_callback)
         self.add_widget(self.solarPlant)
+        self.add_widget(self.buttonGroup)   
 
         # текст поверх
         self.timeLabel = Label(
@@ -330,6 +371,25 @@ class SystemInfoWidget(FloatLayout):
         )
         self.timeLabel.bind(size=self.timeLabel.setter('text_size'))
         #self.add_widget(self.timeLabel)
+
+
+    def buttons_callback(self, value):
+        print(f"Button pressed: {value}")
+        if value == "1":
+            if self.solarPlant not in self.children:
+                self.solarPlant.opacity = 0  # початкова прозорість
+                self.add_widget(self.solarPlant)
+                # Анімація появи
+                anim = Animation(opacity=1, duration=0.3)
+                anim.start(self.solarPlant)
+            
+        elif value == "2":
+            if self.solarPlant in self.children:
+                
+                anim = Animation(opacity=0, duration=0.3)
+                anim.bind(on_complete=lambda *args: self.remove_widget(self.solarPlant))
+                anim.start(self.solarPlant)
+
 
     def _update_rect(self, *args):
         self.bg_rect.pos = self.pos
