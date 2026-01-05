@@ -110,11 +110,10 @@ if __name__ == '__main__':
                 energyResWidget_widget.waterTankValue = self.gateway.waterLevel-128
                 energyResWidget_widget.boilerLedState = self.gateway.digitalOut[1]
                 
-                smartHomeSensors_widget.line4 = ['---:', "---", '%', '21BCFF']
-                smartHomeSensors_widget.line5 = ['---:', "---", '%', '21BCFF']
+
                
-                smartHomeSensors_widget.line1 = ['Котел:', f"{self.gateway.kotelActTemp/100:.1f}", '°C', 'FFFFFF']
-                smartHomeSensors_widget.line2 = ['Водонагрівач:', f"{self.gateway.boilerTemperature:.1f}", '°C', 'FFFFFF']
+                #smartHomeSensors_widget.line1 = ['Котел:', f"{self.gateway.kotelActTemp/100:.1f}", '°C', 'FFFFFF']
+                #smartHomeSensors_widget.line2 = ['Водонагрівач:', f"{self.gateway.boilerTemperature:.1f}", '°C', 'FFFFFF']
             
             def weather_update(dt):
                 weather_widget._widgetUpdate()
@@ -157,6 +156,7 @@ if __name__ == '__main__':
                 smartHomeSensors_widget.outdoorTemp = float(doorTemp[1])
                 smartHomeSensors_widget.line2 = boilerTemp
                 
+                systemInfo_widget.temperatureGraphUpdate(float(roomTemp[1]), float(doorTemp[1]), self.gateway.boilerTemperature, self.gateway.kotelActTemp/100)
                 
 
                 
@@ -207,7 +207,10 @@ if __name__ == '__main__':
                         systemInfo_widget.solarPlant.batPower = data['socVoltage']/100 * data['socCurrent']/10
                         systemInfo_widget.solarPlant.batLevel = data['socStatusLoad'][0]
                         systemInfo_widget.solarPlant.batCurrent = data['socCurrent']/10
-                        
+
+                        systemInfo_widget.solarGraphUpdate(data['socCurrent']/10, data['socVoltage']/100, data['socStatusLoad'][0]) 
+
+
                     Clock.schedule_once(update_ui, 0)
 
 

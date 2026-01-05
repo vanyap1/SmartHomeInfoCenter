@@ -43,8 +43,6 @@ class SmartHomeSensors(FloatLayout):
     line1 = ListProperty(["Двір:", "22",  "°C", "FFFFFF"])
     line2 = ListProperty(["Дитяча:", "45",  "%", "21BCFF"])
     line3 = ListProperty(["Коридор:", "22",  "°C", "FFFFFF"])
-    line4 = ListProperty(["Бойлер:", "23",  "°C", "FFFFFF"])
-    line5 = ListProperty(["Котел:", "24",  "°C", "FFFFFF"])
     outdoorTemp = NumericProperty(0.0)
 
     def __init__(self, **kwargs):
@@ -62,11 +60,9 @@ class SmartHomeSensors(FloatLayout):
         self.bind(pos=self._update_rect, size=self._update_rect)
 
         # Підписка на зміни властивостей
-        self.bind(line1=self._widgetUpdate,
-                  line2=self._widgetUpdate,
-                  line3=self._widgetUpdate,
-                  line4=self._widgetUpdate,
-                  line5=self._widgetUpdate,
+        self.bind(line1=self._label1Update,
+                  line2=self._label2Update,
+                  line3=self._label3Update,
                   outdoorTemp=self._tempUpdate
                   )
 
@@ -79,11 +75,34 @@ class SmartHomeSensors(FloatLayout):
                                  allow_stretch=True,
                                  keep_ratio=True)
         
-        self.widgetLabel = Label(
-            text="[color=21BCFF][b]Outdoor Temp:[/b][/color]\n[color=FFFFFF]22 °C[/color]",
-            pos_hint={'x': .31, 'y': 0.1},
+        self.widgetLabel1 = Label(
+            text="-- -- --",
+            pos_hint={'x': 0.3, 'y': 0.1},
             size_hint=(None, None),
-            size=(70, 60),
+            size=(300, 20),
+            text_size=(300, None),
+            halign='left',
+            valign='middle',
+            font_size=18, markup=True, font_name=self.fontName, 
+        )
+        self.widgetLabel2 = Label(
+            text="-- -- --",
+            pos_hint={'x': 0.3, 'y': 0.1},
+            size_hint=(None, None),
+            size=(300, 20),
+            text_size=(300, None),
+            halign='left',
+            valign='middle',
+            font_size=18, markup=True, font_name=self.fontName, 
+        )
+        self.widgetLabel3 = Label(
+            text="-- -- --",
+            pos_hint={'x': 0.3, 'y': 0.1},
+            size_hint=(None, None),
+            size=(300, 20),
+            text_size=(300, None),
+            halign='left',
+            valign='middle',
             font_size=18, markup=True, font_name=self.fontName, 
         )
 
@@ -102,13 +121,17 @@ class SmartHomeSensors(FloatLayout):
 
 
         self.add_widget(self.widgetIcon1)
-        self.add_widget(self.widgetLabel)
+        self.labelsBox = GridLayout(cols=1, size_hint=(None, 1), pos_hint={'x': 0.16, 'y': -0.05}, spacing=0)
+        self.labelsBox.add_widget(self.widgetLabel1)
+        self.labelsBox.add_widget(self.widgetLabel2)
+        self.labelsBox.add_widget(self.widgetLabel3)
+        self.add_widget(self.labelsBox)
         self.add_widget(self.outdoorTermometer)  # Порожній віджет для вирівнювання
         
         #self.add_widget(self.widgetGrig)
 
         # Ініціалізація тексту
-        self._widgetUpdate()
+        
         
 
     def _tempUpdate(self, instance, value):
@@ -130,16 +153,15 @@ class SmartHomeSensors(FloatLayout):
         self.bg_rect.pos = self.pos
         self.bg_rect.size = self.size
 
-    def _widgetUpdate(self, *args):
-        # Використовуємо line1; за потреби додайте окремі лейбли для line2..line4
-        self.widgetLabel.text = (
-            f"[b]{self.line1[0]}[/b] [color={self.line1[3]}]{self.line1[1]} {self.line1[2]}[/color]"
-            f"\n[b]{self.line2[0]}[/b] [color={self.line2[3]}]{self.line2[1]} {self.line2[2]}[/color]"
-            f"\n[b]{self.line3[0]}[/b] [color={self.line3[3]}]{self.line3[1]} {self.line3[2]}[/color]"
-            #f"\n[b]{self.line4[0]}[/b] [color={self.line4[3]}]{self.line4[1]} {self.line4[2]}[/color]"
-            #f"\n[b]{self.line5[0]}[/b] [color={self.line5[3]}]{self.line5[1]} {self.line5[2]}[/color]"
-        )
+    def _label1Update(self, *args):
+        self.widgetLabel1.text = (f"[b]{self.line1[0]}[/b] [color={self.line1[3]}]{self.line1[1]} {self.line1[2]}[/color]")
+    def _label2Update(self, *args):
+        self.widgetLabel2.text = (f"[b]{self.line2[0]}[/b] [color={self.line2[3]}]{self.line2[1]} {self.line2[2]}[/color]")
+    def _label3Update(self, *args):
+        self.widgetLabel3.text = (f"[b]{self.line3[0]}[/b] [color={self.line3[3]}]{self.line3[1]} {self.line3[2]}[/color]")
 
+
+    
 
 
 

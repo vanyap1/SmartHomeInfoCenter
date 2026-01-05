@@ -15,7 +15,8 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.graphics import Color, RoundedRectangle
 from kivy.animation import Animation
-
+from widgets.graph import MyGraph
+from kivy.utils import get_color_from_hex as rgb
 
 # --------------------------------------------------
 # Віджет з графікою сонячної мережі
@@ -314,17 +315,23 @@ class ButtonsBar(FloatLayout):
         )
 
         self.solarSystemInfoBtn = Button(
-            text='Solar Info',
+            text='Сонячна система',
             on_release=lambda instance: self.button_callback("1")
         )
 
         self.graphInfoBtn = Button(
-            text='Graph Info',
+            text='АКБ графік',
             on_release=lambda instance: self.button_callback("2")   
+        )
+
+        self.graphTempBtn = Button(
+            text='Температури',
+            on_release=lambda instance: self.button_callback("3")   
         )
 
         self.buttonsBlock.add_widget(self.solarSystemInfoBtn)
         self.buttonsBlock.add_widget(self.graphInfoBtn)
+        self.buttonsBlock.add_widget(self.graphTempBtn)
 
         self.add_widget(self.buttonsBlock)
     
@@ -346,6 +353,16 @@ class SystemInfoWidget(FloatLayout):
         self.size_hint = (1, None)
         self.height = 295
 
+        self.currentPoints = []
+        self.voltagePoints = []
+        self.socPoints = []
+
+        #графіки температур
+        self.roomTempPoints = []
+        self.outdoorTempPoints = []
+        self.boilerTempPoints = []
+        self.kotelTempPoints = []
+
         # фон
         with self.canvas.before:
             Color(0, 0, 0, 0.5)
@@ -357,6 +374,26 @@ class SystemInfoWidget(FloatLayout):
         self.solarPlant = SolarGridInfo()
         self.buttonGroup = ButtonsBar(self.buttons_callback)
         self.add_widget(self.solarPlant)
+        
+        self.solarPlantGraph = MyGraph(ymax=100, ymin=-80)
+        self.solarPlantGraph.add_horisontalLine(0, rgb('808080'))  # Додаємо горизонтальну лінію в нулі
+       
+        #self.solarPlantGraph.add_yPlot(self.currentPoints, 'FFAA00')
+        #self.solarPlantGraph.add_yPlot(self.voltagePoints, '00AAFF')
+        #self.solarPlantGraph.add_yPlot(self.socPoints, '00FF00')
+        self.solarPlantGraph.add_yPlot(self.currentPoints, 'FFAA00', label='Струм(A)')
+        self.solarPlantGraph.add_yPlot(self.voltagePoints, '00AAFF', label='Напруга(V)')
+        self.solarPlantGraph.add_yPlot(self.socPoints, '00FF00', label='SoC(%)')
+        
+        self.temperatureGraph = MyGraph(ymax=80, ymin=-20)
+        self.temperatureGraph.add_horisontalLine(0, rgb('808080'))  # Додаємо горизонтальну лінію в нулі
+        self.temperatureGraph.add_yPlot(self.roomTempPoints, 'FFAA00', label='Кімнатна(°C)')     
+        self.temperatureGraph.add_yPlot(self.outdoorTempPoints, '00AAFF', label='Двір(°C)')
+        self.temperatureGraph.add_yPlot(self.boilerTempPoints, '00FF00', label='Бойлер(°C)')
+        self.temperatureGraph.add_yPlot(self.kotelTempPoints, 'FF00FF', label='Котел(°C)')
+
+
+        
         self.add_widget(self.buttonGroup)   
 
         # текст поверх
@@ -371,26 +408,69 @@ class SystemInfoWidget(FloatLayout):
         )
         self.timeLabel.bind(size=self.timeLabel.setter('text_size'))
         #self.add_widget(self.timeLabel)
+    
+    def temperatureGraphUpdate(self, roomTemp, outdoorTemp, boilerTemp, kotelTemp):
+        print(f"Updating temperature graph with values: roomTemp={roomTemp}, outdoorTemp={outdoorTemp}, boilerTemp={boilerTemp}, kotelTemp={kotelTemp}")
+        self.roomTempPoints.append(roomTemp)
+        self.outdoorTempPoints.append(outdoorTemp)
+        self.boilerTempPoints.append(boilerTemp)
+        self.kotelTempPoints.append(kotelTemp)
+        if len(self.roomTempPoints) > 1000:
+            self.roomTempPoints.pop(0)
+            self.outdoorTempPoints.pop(0)
+            self.boilerTempPoints.pop(0)
+            self.kotelTempPoints.pop(0)
+        self.temperatureGraph.refresh_plots()   
+
+    def solarGraphUpdate(self, current, voltage, soc):
+        self.currentPoints.append(current)
+        self.voltagePoints.append(voltage)
+        self.socPoints.append(soc)
+        if len(self.currentPoints) > 1000:
+            self.currentPoints.pop(0)
+            self.voltagePoints.pop(0)
+            self.socPoints.pop(0)
+        self.solarPlantGraph.refresh_plots()
 
 
     def buttons_callback(self, value):
-        print(f"Button pressed: {value}")
-        if value == "1":
-            if self.solarPlant not in self.children:
-                self.solarPlant.opacity = 0  # початкова прозорість
-                self.add_widget(self.solarPlant)
-                # Анімація появи
-                anim = Animation(opacity=1, duration=0.3)
-                anim.start(self.solarPlant)
-            
-        elif value == "2":
-            if self.solarPlant in self.children:
-                
-                anim = Animation(opacity=0, duration=0.3)
-                anim.bind(on_complete=lambda *args: self.remove_widget(self.solarPlant))
-                anim.start(self.solarPlant)
-
-
+    
+    
+        # Список всіх віджетів для перемикання
+        widgets = {
+            "1": self.solarPlant,
+            "2": self.solarPlantGraph,
+            "3": self.temperatureGraph
+        }
+    
+        target_widget = widgets.get(value)
+        if not target_widget:
+            return
+    
+        # Знаходимо поточний активний віджет
+        current_widget = None
+        for widget in widgets.values():
+            if widget in self.children:
+                current_widget = widget
+                break
+    
+        # Якщо віджет вже відображається, нічого не робимо
+        if current_widget == target_widget:
+            return
+    
+        # Анімація зникнення поточного віджета
+        if current_widget:
+            anim_out = Animation(opacity=0, duration=0.3)
+            anim_out.bind(on_complete=lambda *args: self.remove_widget(current_widget))
+            anim_out.start(current_widget)
+    
+        # Анімація появи нового віджета
+        self.add_widget(target_widget)
+        target_widget.opacity = 0
+        anim_in = Animation(opacity=1, duration=0.3)
+        anim_in.start(target_widget)
+    
+    
     def _update_rect(self, *args):
         self.bg_rect.pos = self.pos
         self.bg_rect.size = self.size
